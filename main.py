@@ -4,6 +4,8 @@ import torchvision
 import torchvision.transforms as transforms
 import torchvision.models as models
 
+from classifier import GolemClassifier
+
 
 def get_dataloaders():
 
@@ -49,9 +51,11 @@ def get_dataloaders():
     return trainloader, testloader, classes
 
 def main():
-    get_dataloaders()
+    train_loader, test_loader, classes = get_dataloaders()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     resnet18 = models.resnet18()
+    gc = GolemClassifier(resnet18, resnet18.fc.in_features)
+    gc.to(device)
 
 
 if __name__ == "__main__":
