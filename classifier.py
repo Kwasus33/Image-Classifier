@@ -10,4 +10,3 @@ class GolemClassifier(nn.Module):
     def forward(self, x):
         x = self.model(x)
         return self.fc(x)
-
