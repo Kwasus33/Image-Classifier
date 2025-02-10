@@ -1,4 +1,6 @@
-import torch.optim
+import torch.nn as nn
+import torch.optim as optim
+import torch
 
 import torchvision
 import torchvision.transforms as transforms
@@ -50,12 +52,48 @@ def get_dataloaders():
 
     return trainloader, testloader, classes
 
+def train_epoch(model: nn.Module, criterion, optimizer, loader: torch.utils.data.DataLoader, device: torch.device):
+    model.train()
+    running_loss = 0.0
+
+    for images, labels in loader:
+        outputs = model(images)
+        loss = criterion(outputs, labels)
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        running_loss += loss.item()
+    
+    return running_loss
+
+def eval(model: nn.Module, criterion, loader: torch.utils.data.DataLoader, device: torch.device):
+    model.eval()
+    correct = 0 
+    total = 0
+    with torch.no_grad():
+        for images, labels in loader:
+            outputs = model(images)
+            _, predicted = torch.max(outputs, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+    return correct, total
+
 def main():
     train_loader, test_loader, classes = get_dataloaders()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     resnet18 = models.resnet18()
-    gc = GolemClassifier(resnet18, resnet18.fc.in_features)
-    gc.to(device)
+    gc = GolemClassifier(resnet18, resnet18.fc.out_features)
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(gc.parameters(), lr=1e-3)
+
+    for i in range(2):
+        loss = train_epoch(gc, criterion, optimizer, train_loader, device)
+        print(f"{i+1}/2: loss={loss}")
+
+
 
 
 if __name__ == "__main__":
