@@ -8,6 +8,6 @@ class GolemClassifier(nn.Module):
         self.fc = nn.Linear(features, 10)
     
     def forward(self, x):
-        j = self.model(x)
-        return self.fc(j)
+        x = self.model(x)
+        return self.fc(x)
 
