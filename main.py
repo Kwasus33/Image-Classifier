@@ -5,7 +5,7 @@ import torchvision
 import torchvision.transforms as transforms
 
 
-def main():
+def get_dataloaders():
 
     transform = transforms.Compose(
         [
@@ -26,7 +26,7 @@ def main():
         trainset, batch_size=batch_size, shuffle=True, num_workers=2
     )
 
-    testset = torchvision.datasets.CIFAR10(
+    testset = torchvision.datasets.CIFAR100(
         root="./data", train=False, download=True, transform=transform
     )
     testloader = torch.utils.data.DataLoader(
@@ -45,6 +45,11 @@ def main():
         "ship",
         "truck",
     )
+
+    return trainloader, testloader, classes
+
+def main():
+    get_dataloaders()
 
 
 if __name__ == "__main__":
