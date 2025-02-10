@@ -1,8 +1,8 @@
-import torch.nn as nn
 import torch.optim
 
 import torchvision
 import torchvision.transforms as transforms
+import torchvision.models as models
 
 
 def get_dataloaders():
@@ -18,7 +18,7 @@ def get_dataloaders():
 
     batch_size = 32
 
-    trainset = torchvision.datasets.CIFAR100(
+    trainset = torchvision.datasets.CIFAR10(
         root="./data", train=True, download=True, transform=transform
     )
     # creates iterable set of batch sets
@@ -26,7 +26,7 @@ def get_dataloaders():
         trainset, batch_size=batch_size, shuffle=True, num_workers=2
     )
 
-    testset = torchvision.datasets.CIFAR100(
+    testset = torchvision.datasets.CIFAR10(
         root="./data", train=False, download=True, transform=transform
     )
     testloader = torch.utils.data.DataLoader(
@@ -50,6 +50,8 @@ def get_dataloaders():
 
 def main():
     get_dataloaders()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    resnet18 = models.resnet18()
 
 
 if __name__ == "__main__":
