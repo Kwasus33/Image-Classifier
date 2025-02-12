@@ -27,7 +27,11 @@ def parse_arguments():
 
 def main():
     train_loader, test_loader, classes = get_dataloaders()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device(
+        "mps"
+        if torch.backends.mps.is_available()
+        else "cuda" if torch.cuda.is_available() else "cpu"
+    )
 
     args = parse_arguments()
 
