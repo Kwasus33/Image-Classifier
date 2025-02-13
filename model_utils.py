@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+from sklearn.metrics import recall_score, precision_score, f1_score
 
 
 def train_epoch(
@@ -43,4 +44,10 @@ def eval(
             running_loss += loss.item()
             total_correct += (outputs == labels).float().sum()
 
-    return (running_loss / len(loader)), (total_correct / total_samples)
+    loss = running_loss / len(loader)
+    accuracy = total_correct / total_samples
+    precision = precision_score(y_true=labels, y_pred=outputs)
+    recall = recall_score(y_true=labels, y_pred=outputs)
+    f1 = f1_score(y_true=labels, y_pred=outputs)
+
+    return loss, accuracy, precision, recall, f1
