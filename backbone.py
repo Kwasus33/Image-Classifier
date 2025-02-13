@@ -9,7 +9,7 @@ class GolemBackbone(nn.Module):
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
         self.dropout = nn.Dropout(0.5)
         self.fc = nn.Linear(32 * 14 * 14, 1000)
-    
+
     def forward(self, x):
         x = self.conv1(x)
         x = self.bn1(x)

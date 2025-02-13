@@ -2,6 +2,7 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 
+
 def get_dataloaders():
 
     transform = transforms.Compose(
@@ -15,7 +16,7 @@ def get_dataloaders():
 
     batch_size = 32
 
-    trainset = torchvision.datasets.CIFAR10(
+    trainset = torchvision.datasets.CIFAR100(
         root="./data", train=True, download=True, transform=transform
     )
     # creates iterable set of batch sets
