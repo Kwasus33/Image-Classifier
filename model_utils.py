@@ -8,12 +8,12 @@ def train_epoch(
     criterion,
     optimizer,
     loader: torch.utils.data.DataLoader,
-    # device: torch.device,
+    device: torch.device,
 ):
     model.train()
     running_loss = 0.0
 
-    for images, labels in loader:
+    for images, labels in loader.to(device):
         outputs = model(images)
         loss = criterion(outputs, labels)
 
@@ -30,14 +30,14 @@ def eval(
     model: nn.Module,
     criterion,
     loader: torch.utils.data.DataLoader,
-    # device: torch.device,
+    device: torch.device,
 ):
     model.eval()
     running_loss = 0
     total_correct = 0
     total_samples = 0
     with torch.no_grad():
-        for images, labels in loader:
+        for images, labels in loader.to(device):
             outputs = model(images)
             loss = criterion(outputs, labels)
 
