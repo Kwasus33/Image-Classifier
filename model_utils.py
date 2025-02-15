@@ -13,8 +13,10 @@ def train_epoch(
     model.train()
     running_loss = 0.0
 
-    for images, labels in loader.to(device):
-        outputs = model(images)
+    for images, labels in loader:
+        images = images.to(device)
+        labels = labels.to(device)
+        outputs = model(images)       
         loss = criterion(outputs, labels)
 
         optimizer.zero_grad()
@@ -37,12 +39,15 @@ def eval(
     total_correct = 0
     total_samples = 0
     with torch.no_grad():
-        for images, labels in loader.to(device):
+        for images, labels in loader:
+            images = images.to(device)
+            labels = labels.to(device)
             outputs = model(images)
             loss = criterion(outputs, labels)
+            out = [torch.argmax(x) for x in outputs]
 
             running_loss += loss.item()
-            total_correct += (outputs == labels).float().sum()
+            total_correct += torch.tensor([x == y for x, y in zip(out, labels)]).float().sum()
 
     loss = running_loss / len(loader)
     accuracy = total_correct / total_samples

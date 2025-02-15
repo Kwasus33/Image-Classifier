@@ -16,7 +16,7 @@ def get_dataloaders():
 
     batch_size = 32
 
-    trainset = torchvision.datasets.CIFAR100(
+    trainset = torchvision.datasets.CIFAR10(
         root="./data", train=True, download=True, transform=transform
     )
     # creates iterable set of batch sets
