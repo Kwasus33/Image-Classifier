@@ -5,7 +5,7 @@ class GolemClassifier(nn.Module):
     def __init__(self, model, features):
         super().__init__()
         self.model = model
-        self.fc = nn.Linear(features, 10)
+        self.fc = nn.Linear(features, 100)
 
     def forward(self, x):
         x = self.model(x)

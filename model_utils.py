@@ -16,7 +16,7 @@ def train_epoch(
     for images, labels in loader:
         images = images.to(device)
         labels = labels.to(device)
-        outputs = model(images)       
+        outputs = model(images)
         loss = criterion(outputs, labels)
 
         optimizer.zero_grad()
@@ -39,20 +39,27 @@ def eval(
     total_correct = 0
     total_samples = 0
     with torch.no_grad():
+        # images is tensor of RGB values, labels is tensor of indexes 0-99 indicating class of image
         for images, labels in loader:
             images = images.to(device)
             labels = labels.to(device)
             outputs = model(images)
+            print(images)
+            print(labels)
+            print(outputs)
             loss = criterion(outputs, labels)
             out = [torch.argmax(x) for x in outputs]
 
             running_loss += loss.item()
-            total_correct += torch.tensor([x == y for x, y in zip(out, labels)]).float().sum()
+            total_correct += (
+                torch.tensor([x == y for x, y in zip(out, labels)]).float().sum()
+            )
 
     loss = running_loss / len(loader)
     accuracy = total_correct / total_samples
-    precision = precision_score(y_true=labels, y_pred=outputs)
-    recall = recall_score(y_true=labels, y_pred=outputs)
-    f1 = f1_score(y_true=labels, y_pred=outputs)
+    precision = precision_score(y_true=labels, y_pred=out, average="macro")
+    recall = recall_score(y_true=labels, y_pred=out, average="macro")
+    f1 = f1_score(y_true=labels, y_pred=out, average="macro")
+    metrics = (loss, accuracy, precision, recall, f1)
 
-    return loss, accuracy, precision, recall, f1
+    return metrics, out
