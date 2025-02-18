@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+import numpy as np
 from sklearn.metrics import recall_score, precision_score, f1_score
 
 
@@ -38,28 +39,38 @@ def eval(
     running_loss = 0
     total_correct = 0
     total_samples = 0
+    numpy_labels = []
+    numpy_preds = []
+
     with torch.no_grad():
         # images is tensor of RGB values, labels is tensor of indexes 0-99 indicating class of image
         for images, labels in loader:
             images = images.to(device)
             labels = labels.to(device)
             outputs = model(images)
-            print(images)
-            print(labels)
-            print(outputs)
             loss = criterion(outputs, labels)
-            out = [torch.argmax(x) for x in outputs]
+            preds = torch.argmax(outputs, dim=1)
 
             running_loss += loss.item()
+            total_samples += images.size(0)
             total_correct += (
-                torch.tensor([x == y for x, y in zip(out, labels)]).float().sum()
+                torch.tensor([x == y for x, y in zip(preds, labels)]).float().sum()
             )
+
+    numpy_labels.extend(labels.cpu().numpy())
+    numpy_preds.extend(preds.cpu().numpy())
 
     loss = running_loss / len(loader)
     accuracy = total_correct / total_samples
-    precision = precision_score(y_true=labels, y_pred=out, average="macro")
-    recall = recall_score(y_true=labels, y_pred=out, average="macro")
-    f1 = f1_score(y_true=labels, y_pred=out, average="macro")
+    precision = precision_score(
+        y_true=numpy_labels, y_pred=numpy_preds, average="macro", zero_division=1
+    )
+    recall = recall_score(
+        y_true=numpy_labels, y_pred=numpy_preds, average="macro", zero_division=1
+    )
+    f1 = f1_score(
+        y_true=numpy_labels, y_pred=numpy_preds, average="macro", zero_division=1
+    )
     metrics = (loss, accuracy, precision, recall, f1)
 
-    return metrics, out
+    return metrics, preds

@@ -45,7 +45,7 @@ def main():
         gc = get_golem_model()
 
     criterion = (
-        nn.CrossEntropyLoss() if args.LOSS == "CrossEntropy" else nn.MSELoss
+        nn.CrossEntropyLoss() if args.LOSS == "CrossEntropy" else nn.MSELoss()
     )  # if args.LOSS == "CrossEntropy" else RMSE
 
     optimizer = (
