@@ -41,11 +41,11 @@ def eval(
     running_loss = 0
     total_correct = 0
     total_samples = 0
-    numpy_labels = []
-    numpy_preds = []
+    all_labels = []
+    all_preds = []
 
     with torch.no_grad():
-        # images is tensor of RGB values, labels is tensor of indexes 0-99 indicating class of image
+        # images is tensor of RGB values, labels is tensor of indexes 0-99 (for cifar-100) indicating class of image
         for images, labels in loader:
             images = images.to(device)
             labels = labels.to(device)
@@ -59,26 +59,27 @@ def eval(
                 torch.tensor([x == y for x, y in zip(preds, labels)]).float().sum()
             )
 
-    numpy_labels.extend(labels.cpu().numpy())
-    numpy_preds.extend(preds.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+            all_preds.extend(preds.cpu().numpy())
+
+    all_labels = np.array(all_labels)
+    all_preds = np.array(all_preds)
 
     loss = running_loss / len(loader)
     accuracy = total_correct / total_samples
     precision = precision_score(
-        y_true=numpy_labels, y_pred=numpy_preds, average="macro", zero_division=1
+        y_true=all_labels, y_pred=all_preds, average="macro", zero_division=1
     )
     recall = recall_score(
-        y_true=numpy_labels, y_pred=numpy_preds, average="macro", zero_division=1
+        y_true=all_labels, y_pred=all_preds, average="macro", zero_division=1
     )
-    f1 = f1_score(
-        y_true=numpy_labels, y_pred=numpy_preds, average="macro", zero_division=1
-    )
-    metrics = (loss, accuracy, precision, recall, f1)
+    f1 = f1_score(y_true=all_labels, y_pred=all_preds, average="macro", zero_division=1)
+    metrics = (accuracy, precision, recall, f1)
 
-    return metrics, preds
+    return loss, metrics, preds
 
 
-def getBestOptimLoss():
+def getOptimLossCombinations():
     # Loss functions
     criterions = [
         nn.CrossEntropyLoss,
@@ -105,7 +106,7 @@ def getBestModelParams(model, loader, device):
     best_optim = None
     best_lossFunc = None
 
-    combinations = getBestOptimLoss()
+    combinations = getOptimLossCombinations()
     # Finds optimal learning rate for most popular CNN funcs:
     for lossFunc, optim in combinations:
         print(f"Test for optim {optim} and loss func {lossFunc}: ")

@@ -1,7 +1,9 @@
-/golem
 /data
+
+/plots
 
 .venv/
 venv/
+golem/
 
 __pycache__/
