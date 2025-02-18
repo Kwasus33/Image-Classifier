@@ -3,10 +3,11 @@ import torchvision
 import torchvision.transforms as transforms
 
 
-def get_dataloaders(test_run):
+def get_dataloaders(test_run, img_size=32):
 
     transform = transforms.Compose(
         [
+            transforms.Resize((img_size, img_size)),
             transforms.ToTensor(),  # transforms imgs to tensors
             transforms.Normalize(
                 (0.5, 0.5, 0.5), (0.5, 0.5, 0.5)  # new values: x' = (x−μ)/σ
@@ -20,37 +21,25 @@ def get_dataloaders(test_run):
         trainset = torchvision.datasets.CIFAR10(
             root="./data/cifar10", train=True, download=True, transform=transform
         )
-        trainloader = torch.utils.data.DataLoader(
-            trainset, batch_size=batch_size, shuffle=True, num_workers=2
-        )
         testset = torchvision.datasets.CIFAR10(
             root="./data/cifar10", train=False, download=True, transform=transform
-        )
-        testloader = torch.utils.data.DataLoader(
-            testset, batch_size=batch_size, shuffle=False, num_workers=2
         )
     else:
         trainset = torchvision.datasets.CIFAR100(
             root="./data/cifar100", train=True, download=True, transform=transform
         )
-        trainloader = torch.utils.data.DataLoader(
-            trainset, batch_size=batch_size, shuffle=True, num_workers=2
-        )
         testset = torchvision.datasets.CIFAR100(
             root="./data/cifar100", train=False, download=True, transform=transform
         )
-        testloader = torch.utils.data.DataLoader(
-            testset, batch_size=batch_size, shuffle=False, num_workers=2
-        )
 
     # creates iterable set of batch sets
-    # trainloader = torch.utils.data.DataLoader(
-    #     trainset, batch_size=batch_size, shuffle=True, num_workers=2
-    # )
+    trainloader = torch.utils.data.DataLoader(
+        trainset, batch_size=batch_size, shuffle=True, num_workers=2
+    )
 
-    # testloader = torch.utils.data.DataLoader(
-    #     testset, batch_size=batch_size, shuffle=False, num_workers=2
-    # )
+    testloader = torch.utils.data.DataLoader(
+        testset, batch_size=batch_size, shuffle=False, num_workers=2
+    )
 
     class_names = (
         ["plane", "car", "bird", "cat", "deer", "dog", "frog", "horse", "ship", "truck"]
