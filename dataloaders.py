@@ -15,7 +15,7 @@ def get_dataloaders(test_run, img_size=32):
         ]
     )
 
-    batch_size = 32
+    batch_size = 128
 
     if test_run:
         trainset = torchvision.datasets.CIFAR10(

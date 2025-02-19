@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch.nn.functional as F
 
 """
 needs adding proper activation funcs
@@ -49,9 +50,8 @@ class GolemBackbone(nn.Module):
 
         self.fc1 = nn.Linear(512, 1024)
         self.relu9 = nn.ReLU()
-        self.dropout1 = nn.Dropout(0.5)
+        self.dropout1 = nn.Dropout(0.25)
         self.fc = nn.Linear(1024, 1000)
-        self.dropout2 = nn.Dropout(0.5)
 
     def forward(self, x):
         x = self.pool1(self.relu1(self.bn1(self.conv1(x))))
@@ -68,5 +68,26 @@ class GolemBackbone(nn.Module):
             x.size(0), -1
         )  # tensor must be flatten before passing to fully connected layer
         x = self.dropout1(self.relu9(self.fc1(x)))
-        x = self.dropout2(self.fc(x))
+        x = self.fc(x)
+        return x
+
+
+class GolemBackbone2(nn.Module):
+    def __init__(self):
+        super().__init__()
+        # The input channels are 3 (RGB image), and we output 64 feature maps.
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3)
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.conv2 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3)
+        self.fc1 = nn.Linear(64 * 6 * 6, 512)
+        self.fc = nn.Linear(512, 100)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        x = self.pool(x)
+        x = F.relu(self.conv2(x))
+        x = self.pool(x)
+        x = x.view(x.size(0), -1)  # Flatten the tensor
+        x = F.relu(self.fc1(x))
+        x = F.softmax(self.fc(x), dim=1)
         return x
