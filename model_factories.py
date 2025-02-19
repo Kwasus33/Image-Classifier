@@ -17,10 +17,10 @@ VIT_NAME = "vit.pth"
 
 EPOCH_COUNT = 50
 
-def pretrain_resnet(classes_num, criterion, lr, optimizer, dataloader, device, model, model_name):
+def pretrain_model(classes_num, criterion, lr, optimizer, dataloader, device, model, model_name, output_count):
     # for param in model.parameters():
     #     param.requires_grad = False
-    gc = GolemClassifier(model, model.fc.out_features, classes_num)
+    gc = GolemClassifier(model, output_count, classes_num)
     gc.to(device)
     gc_criterion = nn.CrossEntropyLoss()
     gc_optimizer = optimizer(params=gc.parameters(), lr=lr)
@@ -37,7 +37,7 @@ def load_model(classes_num, criterion, lr, optimizer, dataloader, device, model_
         elif model_name == RESNET34_NAME:
             pretrain_resnet34(classes_num, criterion, lr, optimizer, dataloader, device)
         else:
-            pass
+            pretrain_vitbase(classes_num, criterion, lr, optimizer, dataloader, device)
     model = torch.load(PATH + model_name, weights_only=False)
     model.to(device)
     return model
@@ -51,15 +51,18 @@ def get_resnet18_model(classes_num, criterion, lr, optimizer, dataloader, device
 
 def pretrain_resnet18(classes_num, criterion, lr, optimizer, dataloader, device):
     resnet18 = models.resnet18(weights='IMAGENET1K_V1')
-    pretrain_resnet(classes_num, criterion, lr, optimizer, dataloader, device, resnet18, RESNET18_NAME)
+    pretrain_model(classes_num, criterion, lr, optimizer, dataloader, device, resnet18, RESNET18_NAME, resnet18.fc.out_features)
 
 def get_resnet34_model(classes_num, criterion, lr, optimizer, dataloader, device):
     return load_model(classes_num, criterion, lr, optimizer, dataloader, device, RESNET34_NAME)
 
 def pretrain_resnet34(classes_num, criterion, lr, optimizer, dataloader, device):
     resnet34 = models.resnet34(weights='IMAGENET1K_V1')
-    pretrain_resnet(classes_num, criterion, lr, optimizer, dataloader, device, resnet34, RESNET34_NAME)
+    pretrain_model(classes_num, criterion, lr, optimizer, dataloader, device, resnet34, RESNET34_NAME, resnet34.fc.out_features)
 
-def get_vitbase_model(classes_num):
-    vitbase = models.vit_b_16()
-    return GolemClassifier(vitbase, vitbase.heads.head.out_features, classes_num)
+def get_vitbase_model(classes_num, criterion, lr, optimizer, dataloader, device):
+    return load_model(classes_num, criterion, lr, optimizer, dataloader, device, VIT_NAME)
+
+def pretrain_vitbase(classes_num, criterion, lr, optimizer, dataloader, device):
+    vitbase = models.vit_b_16(weights='IMAGENET1K_V1')
+    pretrain_model(classes_num, criterion, lr, optimizer, dataloader, device, vitbase, VIT_NAME, vitbase.heads.head.out_features)

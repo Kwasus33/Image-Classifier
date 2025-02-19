@@ -39,10 +39,10 @@ def eval(
 ):
     model.eval()
     running_loss = 0
-    total_correct = 0
-    total_samples = 0
+    batch_sizes = []
     all_labels = []
     all_preds = []
+    accs = []
 
     with torch.no_grad():
         # images is tensor of RGB values, labels is tensor of indexes 0-99 (for cifar-100) indicating class of image
@@ -54,11 +54,9 @@ def eval(
             preds = torch.argmax(outputs, dim=1)
 
             running_loss += loss.item()
-            total_samples += images.size(0)
-            total_correct += (
-                torch.tensor([x == y for x, y in zip(preds, labels)]).float().sum()
-            )
-
+            batch_sizes.append(images.shape[0])
+            acc = torch.mean((torch.argmax(outputs, dim=1) == labels).float()).item()
+            accs.append(acc)
             all_labels.extend(labels.cpu().numpy())
             all_preds.extend(preds.cpu().numpy())
 
@@ -66,7 +64,7 @@ def eval(
     all_preds = np.array(all_preds)
 
     loss = running_loss / len(loader)
-    accuracy = total_correct / total_samples
+    accuracy = np.average(accs, weights=batch_sizes)
     precision = precision_score(
         y_true=all_labels, y_pred=all_preds, average="macro", zero_division=1
     )
