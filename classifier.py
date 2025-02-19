@@ -10,7 +10,6 @@ class GolemClassifier(nn.Module):
             self.model = GolemBackbone()
         else:
             self.model = GolemBackbone2()
-        self.model = model
         self.fc = nn.Linear(1000, classes_num)
         self.fc.weight = nn.init.normal_(self.fc.weight, mean=0, std=0.01)
         self.fc.bias = nn.init.zeros_(self.fc.bias)

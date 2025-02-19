@@ -10,7 +10,7 @@ def get_dataloaders(test_run, img_size=32):
             transforms.Resize((img_size, img_size)),
             transforms.ToTensor(),  # transforms imgs to tensors
             transforms.Normalize(
-                (0.5, 0.5, 0.5), (0.5, 0.5, 0.5)  # new values: x' = (x−μ)/σ
+                (0.585, 0.456, 0.406), (0.229, 0.224, 0.225)  # new values: x' = (x−μ)/σ
             ),  # normalizes data - mean and std are set to 0.5 for R, G, B
         ]
     )
