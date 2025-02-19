@@ -1,9 +1,15 @@
+from enum import Enum
+
 import torch.nn as nn
 import torch.nn.functional as F
 
 """
 needs adding proper activation funcs
 """
+
+class GolemBackbones(Enum):
+    GM1 = 1
+    GM2 = 2
 
 
 class GolemBackbone(nn.Module):
@@ -80,7 +86,7 @@ class GolemBackbone2(nn.Module):
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
         self.conv2 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3)
         self.fc1 = nn.Linear(64 * 6 * 6, 512)
-        self.fc = nn.Linear(512, 100)
+        self.head = nn.Linear(512, 1000)
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
@@ -89,5 +95,5 @@ class GolemBackbone2(nn.Module):
         x = self.pool(x)
         x = x.view(x.size(0), -1)  # Flatten the tensor
         x = F.relu(self.fc1(x))
-        x = F.softmax(self.fc(x), dim=1)
+        x = F.softmax(self.head(x), dim=1)
         return x
