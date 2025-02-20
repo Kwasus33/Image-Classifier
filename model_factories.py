@@ -77,7 +77,7 @@ def train_model(
 
     torch.save(
         gc,
-        f"{PATH}{get_model_file_name(model, is_lp)}_lr_{lr}_classes_num_{classes_num}",
+        f"{PATH}{get_model_file_name(model, is_lp)}_lr_{lr}_classes_num_{classes_num}.pth",
     )
 
     return gc, training_losses
@@ -90,9 +90,7 @@ def load_model(
     loads model with given params if already trained and saved,
     otherwise trains model with given params and saves it
     """
-    model_file = (
-        f"{PATH}{get_model_file_name(model, is_lp)}_lr_{lr}_classes_num_{classes_num}"
-    )
+    model_file = f"{PATH}{get_model_file_name(model, is_lp)}_lr_{lr}_classes_num_{classes_num}.pth"
     if not os.path.isfile(model_file):
         train_model(
             model,
