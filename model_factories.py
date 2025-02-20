@@ -1,15 +1,17 @@
 import torch
 import torch.nn as nn
-
-# import torch.optim as optim
+import torch.optim as optim
 import torchvision.models as models
+
+import numpy as np
+
 import os.path
+import itertools
+from enum import Enum
 
 from classifier import GolemClassifier
 from backbone import GolemBackbones
 from model_utils import train_epoch
-
-from enum import Enum
 
 
 PATH = "data/pretrained_models/"
@@ -22,9 +24,6 @@ GOLEM_BB2_NAME = "golem_bb2"
 GOLEM_BB3_NAME = "golem_bb3"
 
 
-EPOCH_COUNT = 50
-
-
 class Model(Enum):
     RESNET18 = 1
     RESNET34 = 2
@@ -35,7 +34,7 @@ class Model(Enum):
 
 
 def train_model(
-    model, criterion, optimizer, lr, is_lp, dataloader, classes_num, device
+    model, criterion, optimizer, lr, epochs, is_lp, dataloader, classes_num, device
 ):
     """
     trains model with given params and saves it
@@ -66,9 +65,12 @@ def train_model(
     gc_criterion = criterion()
     gc_optimizer = optimizer(params=gc.parameters(), lr=lr)
 
-    for i in range(EPOCH_COUNT):
+    training_losses = []
+
+    for i in range(epochs):
         loss = train_epoch(gc, gc_criterion, gc_optimizer, dataloader, device)
-        print(f"Epoch {i}/{EPOCH_COUNT} loss: {loss}\n")
+        training_losses.append(loss)
+        print(f"Epoch {i+1}/{epochs} loss: {loss}\n")
 
     if not os.path.exists(PATH):
         os.makedirs(PATH)
@@ -78,8 +80,12 @@ def train_model(
         f"{PATH}{get_model_file_name(model, is_lp)}_lr_{lr}_classes_num_{classes_num}",
     )
 
+    return gc, training_losses
 
-def load_model(classes_num, criterion, lr, optimizer, dataloader, device, model, is_lp):
+
+def load_model(
+    model, criterion, optimizer, lr, epochs, is_lp, dataloader, classes_num, device
+):
     """
     loads model with given params if already trained and saved,
     otherwise trains model with given params and saves it
@@ -89,7 +95,15 @@ def load_model(classes_num, criterion, lr, optimizer, dataloader, device, model,
     )
     if not os.path.isfile(model_file):
         train_model(
-            model, criterion, optimizer, lr, is_lp, dataloader, classes_num, device
+            model,
+            criterion,
+            optimizer,
+            lr,
+            epochs,
+            is_lp,
+            dataloader,
+            classes_num,
+            device,
         )
     model = torch.load(model_file, weights_only=False)
     model.to(device)
@@ -116,3 +130,56 @@ def get_model_file_name(model, is_lp):
         name += "_fine_tuning"
 
     return name
+
+
+def getOptimLossCombinations():
+    # Loss functions
+    criterions = [
+        nn.CrossEntropyLoss,
+        # CrossEntropy is meant to be used in multiclass classification, automatically deals with different size tensors
+        # nn.MSELoss --> to use MSELoss we need to set same size of outputs (num_of_classes = 10 or 100) and labels (batch_size = 32)
+    ]
+
+    # Optimizers
+    optimizers = [
+        optim.Adam,
+        optim.SGD,
+        optim.RMSprop,
+        #   optim.Adadelta, optim.Adamax
+    ]
+
+    combinations = list(itertools.product(criterions, optimizers))
+
+    return combinations
+
+
+def getBestModelParams(model, loader, device):
+    min_loss = np.inf
+    best_lr = 0
+    best_optim = None
+    best_lossFunc = None
+
+    combinations = getOptimLossCombinations()
+    # Finds optimal learning rate for most popular CNN funcs:
+    for lossFunc, optim in combinations:
+        print(f"Test for optim {optim} and loss func {lossFunc}: ")
+        for lr in np.array([0.0001, 0.001, 0.01, 0.1]):
+            print(f"Learning rate: {lr}")
+            criterion = lossFunc()
+            optimizer = optim(params=model.parameters(), lr=lr)
+            losses = []
+
+            for i in range(3):
+                loss = train_epoch(model, criterion, optimizer, loader, device)
+                print(f"{i+1}/3: loss={loss}")
+                if (i != 0 and loss > losses[-1]) or np.isnan(loss):
+                    break
+                losses.append(loss)
+
+            if len(losses) != 0 and losses[-1] < min_loss:
+                best_lr = lr
+                min_loss = losses[-1]
+                best_lossFunc = lossFunc
+                best_optim = optim
+
+    return best_lr, min_loss, best_lossFunc, best_optim

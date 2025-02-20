@@ -29,16 +29,51 @@ def plot_images(
     plt.savefig(f"plots/{title}.png")
 
 
+def plot_loss(losses, epochs, title="Loss_minimalization"):
+    plt.figure(figsize=(8, 8))
+    bars = plt.bar(x=list(range(1, epochs + 1)), height=losses, width=0.8)
+    plt.title(title)
+    plt.xlabel("Epochs")
+    plt.ylabel("Losses values")
+
+    for bar in bars:
+        y_val = bar.get_height()
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,
+            y_val,
+            round(y_val, 3),
+            ha="center",
+            va="bottom",
+        )
+
+    if not os.path.exists(f"plots"):
+        os.makedirs("plots")
+    plt.savefig(f"plots/{title}.png")
+
+
 def plot_metrics(metrics, title="Metrics"):
     if len(metrics) != 4:
         raise ValueError(
             "Metrics should contain exactly four elements: [Acc, Recall, Precision, F-score]"
         )
     plt.figure(figsize=(6, 6))
-    plt.bar(x=["Acc", "Recall", "Precision", "F-score"], height=metrics, width=0.8)
+    bars = plt.bar(
+        x=["Acc", "Recall", "Precision", "F-score"], height=metrics, width=0.8
+    )
     plt.title(title)
     plt.xlabel("Metrics types")
     plt.ylabel("Model efficiency")
+
+    for bar in bars:
+        y_val = bar.get_height()
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,
+            y_val,
+            round(y_val, 3),
+            ha="center",
+            va="bottom",
+        )
+
     if not os.path.exists(f"plots"):
         os.makedirs("plots")
     plt.savefig(f"plots/{title}.png")
