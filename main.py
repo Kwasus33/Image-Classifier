@@ -4,10 +4,10 @@ import torch.optim as optim
 import torchvision.models as models
 import argparse
 
-from backbone import GolemBackbone
-from classifier import GolemClassifier
-from dataloaders import get_dataloaders
-from model_utils import train_epoch, eval
+from src.backbone import GolemBackbone
+from src.classifier import GolemClassifier
+from src.dataloaders import get_dataloaders
+from src.model_utils import train_epoch, eval
 
 from model_factories import (
     get_golem_model,
